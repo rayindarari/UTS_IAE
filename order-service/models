@@ -1,0 +1,234 @@
+const db = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+
+class Order {
+    // Generate unique order number
+    static generateOrderNumber() {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        return `ORD-${year}${month}${day}-${random}`;
+    }
+
+    // Create new order
+    static async create(orderData, items) {
+        const connection = await db.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+
+            const orderNumber = this.generateOrderNumber();
+            const { user_id, total_amount, shipping_address, shipping_phone, notes } = orderData;
+
+            // Insert order
+            const [orderResult] = await connection.execute(
+                `INSERT INTO orders (order_number, user_id, total_amount, shipping_address, shipping_phone, notes) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [orderNumber, user_id, total_amount, shipping_address, shipping_phone, notes || null]
+            );
+
+            const orderId = orderResult.insertId;
+
+            // Insert order items
+            for (const item of items) {
+                await connection.execute(
+                    `INSERT INTO order_items (order_id, product_id, product_name, quantity, price, subtotal) 
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [orderId, item.product_id, item.product_name, item.quantity, item.price, item.subtotal]
+                );
+            }
+
+            await connection.commit();
+
+            // Return complete order
+            return await this.findById(orderId);
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // Find order by ID
+    static async findById(id) {
+        const [orderRows] = await db.execute(
+            `SELECT id, order_number, user_id, total_amount, status, payment_status, 
+                    shipping_address, shipping_phone, notes, created_at, updated_at 
+             FROM orders WHERE id = ?`,
+            [id]
+        );
+
+        if (orderRows.length === 0) return null;
+
+        const order = orderRows[0];
+        
+        // Get order items
+        const [itemsRows] = await db.execute(
+            `SELECT id, product_id, product_name, quantity, price, subtotal 
+             FROM order_items WHERE order_id = ?`,
+            [order.id]
+        );
+
+        order.items = itemsRows;
+        return order;
+    }
+
+    // Find order by order number
+    static async findByOrderNumber(orderNumber) {
+        const [orderRows] = await db.execute(
+            `SELECT id, order_number, user_id, total_amount, status, payment_status, 
+                    shipping_address, shipping_phone, notes, created_at, updated_at 
+             FROM orders WHERE order_number = ?`,
+            [orderNumber]
+        );
+
+        if (orderRows.length === 0) return null;
+
+        const order = orderRows[0];
+        
+        const [itemsRows] = await db.execute(
+            `SELECT id, product_id, product_name, quantity, price, subtotal 
+             FROM order_items WHERE order_id = ?`,
+            [order.id]
+        );
+
+        order.items = itemsRows;
+        return order;
+    }
+
+    // Get orders by user ID
+    static async findByUserId(userId, page = 1, limit = 10) {
+        const offset = (page - 1) * limit;
+        
+        const [rows] = await db.execute(
+            `SELECT id, order_number, total_amount, status, payment_status, 
+                    shipping_address, created_at 
+             FROM orders 
+             WHERE user_id = ? 
+             ORDER BY created_at DESC 
+             LIMIT ? OFFSET ?`,
+            [userId, limit, offset]
+        );
+
+        const [countResult] = await db.execute(
+            'SELECT COUNT(*) as total FROM orders WHERE user_id = ?',
+            [userId]
+        );
+
+        return {
+            orders: rows,
+            total: countResult[0].total,
+            page,
+            limit,
+            totalPages: Math.ceil(countResult[0].total / limit)
+        };
+    }
+
+    // Get all orders with filters (Admin only)
+    static async getAll(filters = {}, page = 1, limit = 10) {
+        const offset = (page - 1) * limit;
+        let query = 'SELECT id, order_number, user_id, total_amount, status, payment_status, created_at FROM orders WHERE 1=1';
+        const params = [];
+
+        // Apply filters
+        if (filters.status) {
+            query += ' AND status = ?';
+            params.push(filters.status);
+        }
+        
+        if (filters.payment_status) {
+            query += ' AND payment_status = ?';
+            params.push(filters.payment_status);
+        }
+        
+        if (filters.user_id) {
+            query += ' AND user_id = ?';
+            params.push(filters.user_id);
+        }
+        
+        if (filters.date_from) {
+            query += ' AND created_at >= ?';
+            params.push(filters.date_from);
+        }
+        
+        if (filters.date_to) {
+            query += ' AND created_at <= ?';
+            params.push(filters.date_to);
+        }
+
+        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(limit, offset);
+
+        const [rows] = await db.execute(query, params);
+
+        const [countResult] = await db.execute(
+            `SELECT COUNT(*) as total FROM orders WHERE 1=1 ${query.split('WHERE')[2].split('ORDER')[0]}`,
+            params.slice(0, -2)
+        );
+
+        return {
+            orders: rows,
+            total: countResult[0].total,
+            page,
+            limit,
+            totalPages: Math.ceil(countResult[0].total / limit)
+        };
+    }
+
+    // Update order status
+    static async updateStatus(orderId, status) {
+        const [result] = await db.execute(
+            'UPDATE orders SET status = ? WHERE id = ?',
+            [status, orderId]
+        );
+        return result.affectedRows > 0;
+    }
+
+    // Update payment status
+    static async updatePaymentStatus(orderId, paymentStatus) {
+        const [result] = await db.execute(
+            'UPDATE orders SET payment_status = ? WHERE id = ?',
+            [paymentStatus, orderId]
+        );
+        return result.affectedRows > 0;
+    }
+
+    // Cancel order
+    static async cancelOrder(orderId) {
+        const [result] = await db.execute(
+            'UPDATE orders SET status = ? WHERE id = ? AND status IN (?, ?)',
+            ['cancelled', orderId, 'pending', 'processing']
+        );
+        return result.affectedRows > 0;
+    }
+
+    // Get order statistics for a user
+    static async getUserStats(userId) {
+        const [stats] = await db.execute(
+            `SELECT 
+                COUNT(*) as total_orders,
+                SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as completed_orders,
+                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_orders,
+                SUM(CASE WHEN status IN ('pending', 'processing', 'shipped') THEN 1 ELSE 0 END) as active_orders,
+                COALESCE(SUM(CASE WHEN status = 'delivered' THEN total_amount ELSE 0 END), 0) as total_spent
+             FROM orders 
+             WHERE user_id = ?`,
+            [userId]
+        );
+        return stats[0];
+    }
+
+    // Check if order belongs to user
+    static async belongsToUser(orderId, userId) {
+        const [rows] = await db.execute(
+            'SELECT id FROM orders WHERE id = ? AND user_id = ?',
+            [orderId, userId]
+        );
+        return rows.length > 0;
+    }
+}
+
+module.exports = Order;
