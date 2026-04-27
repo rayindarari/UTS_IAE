@@ -1,0 +1,46 @@
+// Format currency to IDR
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(amount);
+};
+
+// Format date
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+// Calculate estimated delivery date
+const getEstimatedDelivery = (orderDate) => {
+    const delivery = new Date(orderDate);
+    delivery.setDate(delivery.getDate() + 3); // 3 days delivery
+    return delivery;
+};
+
+// Validate order status transition
+const isValidStatusTransition = (currentStatus, newStatus) => {
+    const transitions = {
+        'pending': ['processing', 'cancelled'],
+        'processing': ['shipped', 'cancelled'],
+        'shipped': ['delivered'],
+        'delivered': [],
+        'cancelled': []
+    };
+    
+    return transitions[currentStatus]?.includes(newStatus) || false;
+};
+
+module.exports = {
+    formatCurrency,
+    formatDate,
+    getEstimatedDelivery,
+    isValidStatusTransition
+};
