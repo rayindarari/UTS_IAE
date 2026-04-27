@@ -1,0 +1,59 @@
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const orderRoutes = require('./routes/orderRoutes');
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3002;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/orders', orderRoutes);
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        service: 'Order Service', 
+        timestamp: new Date(),
+        endpoints: {
+            orders: '/api/orders',
+            health: '/health'
+        }
+    });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`📦 Order Service running on port ${PORT}`);
+    console.log(`📍 http://localhost:${PORT}`);
+    console.log(`\n📋 Available Endpoints:`);
+    console.log(`\n🛒 Order Management:`);
+    console.log(`   POST   /api/orders                 - Create new order`);
+    console.log(`   GET    /api/orders/my-orders       - Get my orders`);
+    console.log(`   GET    /api/orders/my-stats        - Get my order stats`);
+    console.log(`   GET    /api/orders/:id             - Get order by ID`);
+    console.log(`   GET    /api/orders/number/:num     - Get order by number`);
+    console.log(`   POST   /api/orders/:id/cancel      - Cancel order`);
+    console.log(`\n👑 Admin Endpoints:`);
+    console.log(`   GET    /api/orders                 - Get all orders (with filters)`);
+    console.log(`   PUT    /api/orders/:id/status      - Update order status`);
+    console.log(`   PUT    /api/orders/:id/payment     - Update payment status`);
+    console.log(`   GET    /api/orders/admin/stats/summary - Product sales summary`);
+});
