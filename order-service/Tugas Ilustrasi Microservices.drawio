@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.0">
+  <diagram name="Page-1" id="IU2N2vZoTm-y7BvNcf_I">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ext_net" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="EXTERNAL NETWORK (Public)" vertex="1">
+          <mxGeometry height="120" width="770" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="web_app" parent="ext_net" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Web App" vertex="1">
+          <mxGeometry height="60" width="120" x="100" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mobile_app" parent="ext_net" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Mobile App" vertex="1">
+          <mxGeometry height="60" width="120" x="550" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="k8s_cluster" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="INFRASTRUCTURE: KUBERNETES CLUSTER" vertex="1">
+          <mxGeometry height="780" width="770" x="40" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_label" parent="k8s_cluster" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" value="[ EDGE LAYER ]" vertex="1">
+          <mxGeometry height="30" width="120" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="nginx" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Nginx&lt;br&gt;(Load Balancer/Proxy)" vertex="1">
+          <mxGeometry height="80" width="200" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="kong" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Kong (API Gateway)&lt;br&gt;(Auth, Rate Limiting, Route Management)" vertex="1">
+          <mxGeometry height="80" width="330" x="400" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="interface_label" parent="k8s_cluster" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" value="[ INTERFACE/API ]" vertex="1">
+          <mxGeometry height="30" width="120" x="20" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="service_label" parent="k8s_cluster" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" value="[ SERVICE LAYER ]&lt;br&gt;(Synchronous Comm)" vertex="1">
+          <mxGeometry height="40" width="150" x="20" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_a" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="[Docker]&lt;br&gt;Microsvc A" vertex="1">
+          <mxGeometry height="80" width="120" x="200" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_b" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="[Docker]&lt;br&gt;Microsvc B" vertex="1">
+          <mxGeometry height="80" width="120" x="400" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_c" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="[Docker]&lt;br&gt;Microsvc C" vertex="1">
+          <mxGeometry height="80" width="120" x="600" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="data_label" parent="k8s_cluster" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" value="[ DATA LAYER ]" vertex="1">
+          <mxGeometry height="30" width="120" x="20" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="db_a" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="[Docker]&lt;br&gt;Database A" vertex="1">
+          <mxGeometry height="80" width="120" x="200" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="db_b" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="[Docker]&lt;br&gt;Database B" vertex="1">
+          <mxGeometry height="80" width="120" x="400" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="db_c" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="[Docker]&lt;br&gt;Database C" vertex="1">
+          <mxGeometry height="80" width="120" x="600" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="msg_label" parent="k8s_cluster" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" value="[ MESSAGING LAYER ]&lt;br&gt;(Asynchronous Comm)" vertex="1">
+          <mxGeometry height="40" width="150" x="20" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="broker" parent="k8s_cluster" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Message Broker&lt;br&gt;(Kafka: Streaming | RabbitMQ: Task)" vertex="1">
+          <mxGeometry height="80" width="520" x="200" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="conn2" edge="1" parent="k8s_cluster" source="nginx" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="kong" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn3" edge="1" parent="k8s_cluster" source="kong" style="endArrow=classic;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="svc_a" value="GraphQL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn4" edge="1" parent="k8s_cluster" source="kong" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="svc_b" value="RESTful API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn5" edge="1" parent="k8s_cluster" source="kong" style="endArrow=classic;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="svc_c" value="RESTful API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn6" edge="1" parent="k8s_cluster" source="svc_a" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="db_a" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn7" edge="1" parent="k8s_cluster" source="svc_b" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="db_b" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn8" edge="1" parent="k8s_cluster" source="svc_c" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="db_c" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn9" edge="1" parent="k8s_cluster" source="db_a" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" target="broker" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn10" edge="1" parent="k8s_cluster" source="db_b" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="broker" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn11" edge="1" parent="k8s_cluster" source="db_c" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" target="broker" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn1" edge="1" parent="1" source="ext_net" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="k8s_cluster" value="HTTP Request / API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
