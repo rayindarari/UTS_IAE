@@ -1,0 +1,418 @@
+const Order = require('../models/Order');
+const OrderItem = require('../models/OrderItem');
+
+// Create new order
+exports.createOrder = async (req, res) => {
+    try {
+        const { items, shipping_address, shipping_phone, notes } = req.body;
+        const user_id = req.user.id;
+
+        // Validate input
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order must contain at least one item'
+            });
+        }
+
+        if (!shipping_address || !shipping_phone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Shipping address and phone are required'
+            });
+        }
+
+        // Calculate total amount
+        let total_amount = 0;
+        const processedItems = [];
+
+        for (const item of items) {
+            if (!item.product_id || !item.product_name || !item.quantity || !item.price) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Each item must have product_id, product_name, quantity, and price'
+                });
+            }
+
+            if (item.quantity <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quantity must be greater than 0'
+                });
+            }
+
+            const subtotal = item.quantity * item.price;
+            total_amount += subtotal;
+            
+            processedItems.push({
+                product_id: item.product_id,
+                product_name: item.product_name,
+                quantity: item.quantity,
+                price: item.price,
+                subtotal: subtotal
+            });
+        }
+
+        // Create order
+        const orderData = {
+            user_id,
+            total_amount,
+            shipping_address,
+            shipping_phone,
+            notes
+        };
+
+        const order = await Order.create(orderData, processedItems);
+
+        res.status(201).json({
+            success: true,
+            message: 'Order created successfully',
+            data: order
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+// Get my orders (for customer)
+exports.getMyOrders = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        
+        const result = await Order.findByUserId(req.user.id, page, limit);
+        
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Get order by ID
+exports.getOrderById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const order = await Order.findById(id);
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Check authorization (owner or admin can view)
+        if (req.user.role !== 'admin' && order.user_id !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. You can only view your own orders.'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: order
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Get order by order number
+exports.getOrderByNumber = async (req, res) => {
+    try {
+        const { orderNumber } = req.params;
+        
+        const order = await Order.findByOrderNumber(orderNumber);
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        if (req.user.role !== 'admin' && order.user_id !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: order
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Get all orders (Admin only)
+exports.getAllOrders = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        
+        const filters = {
+            status: req.query.status,
+            payment_status: req.query.payment_status,
+            user_id: req.query.user_id,
+            date_from: req.query.date_from,
+            date_to: req.query.date_to
+        };
+        
+        // Remove undefined filters
+        Object.keys(filters).forEach(key => 
+            filters[key] === undefined && delete filters[key]
+        );
+        
+        const result = await Order.getAll(filters, page, limit);
+        
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Update order status
+exports.updateOrderStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Valid statuses: pending, processing, shipped, delivered, cancelled'
+            });
+        }
+
+        const order = await Order.findById(id);
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Only admin can update status
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Only admin can update order status.'
+            });
+        }
+
+        const updated = await Order.updateStatus(id, status);
+        
+        if (updated) {
+            const updatedOrder = await Order.findById(id);
+            res.json({
+                success: true,
+                message: 'Order status updated successfully',
+                data: updatedOrder
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Failed to update order status'
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Cancel order (customer)
+exports.cancelOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const order = await Order.findById(id);
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Check ownership
+        if (order.user_id !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You can only cancel your own orders'
+            });
+        }
+
+        // Check if order can be cancelled (only pending or processing)
+        if (!['pending', 'processing'].includes(order.status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Order cannot be cancelled because status is ${order.status}`
+            });
+        }
+
+        const cancelled = await Order.cancelOrder(id);
+        
+        if (cancelled) {
+            const cancelledOrder = await Order.findById(id);
+            res.json({
+                success: true,
+                message: 'Order cancelled successfully',
+                data: cancelledOrder
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Failed to cancel order'
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Update payment status (Admin only)
+exports.updatePaymentStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { payment_status } = req.body;
+        
+        const validStatuses = ['unpaid', 'paid', 'refunded'];
+        
+        if (!validStatuses.includes(payment_status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid payment status. Valid: unpaid, paid, refunded'
+            });
+        }
+
+        const order = await Order.findById(id);
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Only admin can update payment status.'
+            });
+        }
+
+        const updated = await Order.updatePaymentStatus(id, payment_status);
+        
+        if (updated) {
+            const updatedOrder = await Order.findById(id);
+            res.json({
+                success: true,
+                message: 'Payment status updated successfully',
+                data: updatedOrder
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Failed to update payment status'
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Get order statistics
+exports.getOrderStats = async (req, res) => {
+    try {
+        const userId = req.params.userId || req.user.id;
+        
+        // Check authorization
+        if (req.user.role !== 'admin' && req.user.id !== parseInt(userId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied'
+            });
+        }
+
+        const stats = await Order.getUserStats(userId);
+        
+        res.json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+// Get product sales summary (Admin only)
+exports.getProductSalesSummary = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const productId = req.query.product_id;
+        
+        const summary = await OrderItem.getProductSalesSummary(productId, limit);
+        
+        res.json({
+            success: true,
+            data: summary
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
