@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product & Service - Kami</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (gratis) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Header Section */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            font-size: 1.2rem;
+            color: #4b5563;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* Tabs (Product / Service) */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .tab-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+            box-shadow: 0 8px 20px rgba(37,99,235,0.2);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        /* Grid Produk & Layanan */
+        .products-grid, .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15);
+        }
+
+        .card-img {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        /* Warna latar berbeda untuk demo */
+        .img-bg-1 { background: linear-gradient(135deg, #3b82f6, #1e3a8a); }
+        .img-bg-2 { background: linear-gradient(135deg, #8b5cf6, #4c1d95); }
+        .img-bg-3 { background: linear-gradient(135deg, #ec489a, #be185d); }
+        .img-bg-4 { background: linear-gradient(135deg, #10b981, #065f46); }
+        .img-bg-5 { background: linear-gradient(135deg, #f59e0b, #b45309); }
+        .img-bg-6 { background: linear-gradient(135deg, #06b6d4, #155e75); }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .card-content p {
+            color: #4b5563;
+            margin-bottom: 1rem;
+        }
+
+        .price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+
+        .btn-detail {
+            background: transparent;
+            border: 1px solid #2563eb;
+            color: #2563eb;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-detail:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Hidden class untuk tab */
+        .hidden {
+            display: none;
+        }
+
+        /* footer kecil */
+        .demo-note {
+            margin-top: 4rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+            .section-header h2 {
+                font-size: 2rem;
+            }
+            .tab-btn {
+                padding: 0.5rem 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="section-header">
+        <h2>✨ Solusi Terbaik untuk Anda</h2>
+        <p>Pilih produk unggulan atau layanan profesional yang kami tawarkan</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="products">🛍️ Produk</button>
+        <button class="tab-btn" data-tab="services">⚙️ Layanan</button>
+    </div>
+
+    <!-- Daftar PRODUK -->
+    <div id="productsTab" class="products-grid">
+        <!-- Card 1 -->
+        <div class="card">
+            <div class="card-img img-bg-1">
+                <i class="fas fa-laptop-code fa-4x"></i>
+            </div>
+            <div class="card-content">
+                <h3>WorkStation Pro X</h3>
+                <p>PC desktop performa tinggi untuk desain, editing, dan programming. Prosesor Intel i9, RAM 32GB.</p>
+                <div class="price">Rp 18.999.000</div>
+                <button class="btn-detail" onclick="showDetail('WorkStation Pro X', 'Desktop profesional dengan garansi 3 tahun')">Detail</button>
+            </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="card">
+            <div class="card-img img-bg-2">
+                <i class="fas fa-cloud-upload-alt fa-4x"></i>
+            </div>
+            <div class="card-content">
+                <h3>CloudStorage Plus</h3>
+                <p>Penyimpanan cloud 1TB dengan enkripsi end-to-end. Akses cepat dan aman.</p>
+                <div class="price">Rp 499.000 / thn</div>
+                <button class="btn-detail" onclick="showDetail('CloudStorage Plus', 'Solusi backup dan kolaborasi tim')">Detail</button>
+            </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="card">
+            <div class="card-img img-bg-3">
+                <i class="fas fa-robot fa-4x"></i>
+            </div>
+            <div class="card-content">
+                <h3>AI Assistant Bot</h3>
+                <p>Chatbot AI siap pakai untuk customer service 24/7, integrasi dengan website & WA.</p>
+                <div class="price">Rp 2.499.000</div>
+                <button class="btn-detail" onclick="showDetail('AI Assistant Bot', 'Lisensi lifetime + update fitur')">Detail</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daftar LAYANAN -->
+    <div id="servicesTab" class="services-grid hidden">
+        <!-- Service 1 -->
+        <div class="card">
+            <div class="card-img img-bg-4">
+                <i class="fas fa-code-branch fa-4x"></i>
+            </div>
+            <div class="card-content">
+                <h3>Custom Software Dev</h3>
+                <p>Kami bangun aplikasi web & mobile sesuai kebutuhan bisnis Anda. Konsultasi gratis.</p>
+                <div class="price">Mulai Rp 25 Juta</div>
+                <button class="btn-detail" onclick="showDetail('Custom Software Dev', 'Estimasi pengerjaan 4-8 minggu')">Detail</button>
+            </div>
+        </div>
+        <!-- Service 2 -->
+        <div class="card">
+            <div class="card-img img-bg-5">
+                <i class="fas fa-chart-line fa-4x"></i>
+            </div>
+            <div class="card-content">
+                <h3>Digital Marketing</h3>
+                <p>SEO, iklan berbayar, dan manajemen sosial media untuk meningkatkan brand awareness.</p>
+                <div class="price">Rp 4.999.000 / bln</div>
+                <button class="btn-detail" onclick="showDetail('Digital Marketing', 'Laporan performa mingguan')">Detail</button>
+            </div>
+        </div>
+        <!-- Service 3 -->
+        <div class="card">
+            <div class="card-img img-bg-6">
+                <i class="fas fa-shield-alt fa-4x"></i>
+            </div>
+            <div class="card-content">
+                <h3>IT Security Audit</h3>
+                <p>Audit keamanan sistem, penetration testing, dan rekomendasi hardening.</p>
+                <div class="price">Rp 12.000.000</div>
+                <button class="btn-detail" onclick="showDetail('IT Security Audit', '+ sertifikat kelayakan keamanan')">Detail</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-note">
+        <i class="fas fa-info-circle"></i> Klik tombol "Detail" untuk simulasi alert info. Cukup ganti data sesuai produk/layanan nyata Anda.
+    </div>
+</div>
+
+<script>
+    // Fungsi untuk tab switching
+    const productsTab = document.getElementById('productsTab');
+    const servicesTab = document.getElementById('servicesTab');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+
+    function switchTab(tabId) {
+        if (tabId === 'products') {
+            productsTab.classList.remove('hidden');
+            servicesTab.classList.add('hidden');
+        } else {
+            productsTab.classList.add('hidden');
+            servicesTab.classList.remove('hidden');
+        }
+
+        // Update active class pada button
+        tabBtns.forEach(btn => {
+            if (btn.dataset.tab === tabId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // Event listener untuk tombol tab
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            switchTab(tabId);
+        });
+    });
+
+    // Fungsi untuk menampilkan detail produk/layanan (bisa diganti modal atau navigasi)
+    window.showDetail = function(itemName, additionalInfo) {
+        alert(`✨ Detail: ${itemName}\n📌 ${additionalInfo}\n\nHubungi kami untuk info lebih lanjut.`);
+        // Di sini bisa diarahkan ke halaman detail atau popup modal
+    }
+
+    // Optional: Log bahwa halaman siap
+    console.log("Product & Service page ready");
+</script>
+</body>
+</html>
