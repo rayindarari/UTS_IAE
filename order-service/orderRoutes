@@ -1,0 +1,24 @@
+const express = require('express');
+const router = express.Router();
+const orderController = require('../controllers/orderController');
+const { authMiddleware, adminOnly } = require('../middlewares/authMiddleware');
+
+// All routes require authentication
+router.use(authMiddleware);
+
+// Customer routes
+router.post('/', orderController.createOrder);
+router.get('/my-orders', orderController.getMyOrders);
+router.get('/my-stats', orderController.getOrderStats);
+router.post('/:id/cancel', orderController.cancelOrder);
+router.get('/number/:orderNumber', orderController.getOrderByNumber);
+router.get('/:id', orderController.getOrderById);
+
+// Admin only routes
+router.get('/', adminOnly, orderController.getAllOrders);
+router.put('/:id/status', adminOnly, orderController.updateOrderStatus);
+router.put('/:id/payment', adminOnly, orderController.updatePaymentStatus);
+router.get('/admin/stats/summary', adminOnly, orderController.getProductSalesSummary);
+router.get('/admin/stats/user/:userId', adminOnly, orderController.getOrderStats);
+
+module.exports = router;
